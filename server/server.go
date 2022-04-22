@@ -10,6 +10,7 @@ import (
 	"github.com/shirou/gopsutil/v3/load"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/shirou/gopsutil/v3/process"
+	"github.com/shirou/gopsutil/v3/server/types"
 )
 
 func MakeRouter() *mux.Router {
@@ -70,14 +71,6 @@ func hostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type Process struct {
-	Pid     int32                   `json:"pid"`
-	Name    string                  `json:"name"`
-	Cmdline string                  `json:"cmdline"`
-	Cpu     float64                 `json:"cpu"`
-	Mem     *process.MemoryInfoStat `json:"mem"`
-}
-
 func processHandler(w http.ResponseWriter, r *http.Request) {
 	procs, err := process.Processes()
 	if err != nil {
@@ -86,14 +79,14 @@ func processHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Processes is not fully populated, only PIDs.
-	// Lets fill up with names and CLI command line
-	procList := make([]*Process, 0, len(procs))
+	// Fill up with names and CLI command line
+	procList := make([]*types.Process, 0, len(procs))
 	for idx := range procs {
 		name, _ := procs[idx].Name()
 		cmdline, _ := procs[idx].Cmdline()
 		cpuTime, _ := procs[idx].CPUPercent()
 		mem, _ := procs[idx].MemoryInfo()
-		procList = append(procList, &Process{
+		procList = append(procList, &types.Process{
 			Pid:     procs[idx].Pid,
 			Name:    name,
 			Cmdline: cmdline,
@@ -101,6 +94,9 @@ func processHandler(w http.ResponseWriter, r *http.Request) {
 			Mem:     mem,
 		})
 	}
+	response := types.ProcessResponse{
+		Processes: procList,
+	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(procList)
+	json.NewEncoder(w).Encode(response)
 }
