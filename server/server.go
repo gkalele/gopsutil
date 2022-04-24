@@ -47,7 +47,8 @@ func cpuHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 	} else {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(c)
+		cpuInfo := &types.CpuResponse{CpuInfos: c}
+		json.NewEncoder(w).Encode(cpuInfo)
 	}
 }
 

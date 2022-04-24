@@ -1,6 +1,7 @@
 package types
 
 import (
+	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/process"
 )
 
@@ -14,4 +15,8 @@ type Process struct {
 
 type ProcessResponse struct {
 	Processes []*Process `json:"processes"`
+}
+
+type CpuResponse struct {
+	CpuInfos []cpu.InfoStat `json:"cpu_infos"`
 }
